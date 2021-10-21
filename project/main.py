@@ -98,7 +98,6 @@ class OperationalMode(enum.Enum):
     ECB = 1
     OFB = 2
 
-
 class CommunicationNode:
     def __init__(self):
         self.private_key = None
@@ -135,12 +134,15 @@ class CommunicationNode:
 
     def encrypt_message(self, message):
         if self.mode == OperationalMode.ECB:
-            cipher = ecb_cipher(self.private_key)
+            cipher = EcbCipher(self.private_key)
         else:
-            cipher = ofb_cipher(self.private_key)
+            cipher = OfbCipher(self.private_key)
 
         return cipher.encrypt(message)
 
+    def print_messages(self):
+        for message in self.memory:
+            print(message)
 
 class KeyManager:
     def __init__(self):
@@ -155,11 +157,20 @@ class KeyManager:
         return self.public_key
 
 
+def read_from_file(file_name):
+    file = open(file_name, "r")
+    return file.read()
+
+
 if __name__ == '__main__':
+    file_name = "input.txt"
     operational_mode = OperationalMode.ECB
     init_vector = "initialized"
     key_manager = KeyManager()
     A = CommunicationNode()
     B = CommunicationNode()
     A.start_communication(B, operational_mode)
-    B.send_message(A, "testare")
+    B.send_message("ack", A)
+    A.send_message(read_from_file(file_name), B)
+    B.print_messages()
+
